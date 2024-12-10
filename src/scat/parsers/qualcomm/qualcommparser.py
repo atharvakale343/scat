@@ -315,6 +315,7 @@ class QualcommParser:
     def run_diag(self, writer_qmdl = None):
         oldbuf = b''
         loop = True
+        prev_parse_result = None
         try:
             while loop:
                 buf = self.io_device.read(0x1000)
@@ -331,7 +332,7 @@ class QualcommParser:
                 else:
                     oldbuf = b''
 
-                for pkt in buf_atom:
+                for i, pkt in enumerate(buf_atom):
                     if len(pkt) == 0:
                         continue
                     parse_result = self.parse_diag(pkt)
@@ -340,7 +341,10 @@ class QualcommParser:
                         writer_qmdl.write_cp(pkt + b'\x7e')
 
                     if parse_result is not None:
+                        if prev_parse_result and 'up' in prev_parse_result and 'up' in parse_result and prev_parse_result['up'] == parse_result['up']:
+                            break
                         self.postprocess_parse_result(parse_result)
+                        prev_parse_result = parse_result
 
         except KeyboardInterrupt:
             return

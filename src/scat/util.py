@@ -318,10 +318,11 @@ class gsmtapv3_nr_rrc_types(IntEnum):
 def create_gsmtap_header(version = 2, payload_type = 0, timeslot = 0,
     arfcn = 0, signal_dbm = 0, snr_db = 0, frame_number = 0,
     sub_type = 0, antenna_nr = 0, sub_slot = 0,
-    device_sec = 0, device_usec = 0):
+    device_sec = 0, device_usec = 0,
+    phy_cell = 0):
 
     gsmtap_v2_hdr_def = '!BBBBHBBLBBBB'
-    gsmtap_v3_hdr_def = '!BBHHH'
+    gsmtap_v3_hdr_def = '!BBHHHL'
     gsmtap_hdr = b''
 
     # Sanity check - Wireshark GSMTAP dissector accepts only 14 bits of ARFCN
@@ -351,9 +352,10 @@ def create_gsmtap_header(version = 2, payload_type = 0, timeslot = 0,
         gsmtap_hdr = struct.pack(gsmtap_v3_hdr_def,
             3,                           # Version
             0,                           # Reserved
-            2,                           # Header Length
+            3,                           # Header Length
             payload_type,                # Type
             sub_type,                    # Subtype
+            phy_cell,                    # Physical Cell
             )
     else:
         assert (version == 2) or (version == 3), "GSMTAP version should be either 2 or 3"
