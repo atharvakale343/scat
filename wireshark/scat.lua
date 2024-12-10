@@ -13,10 +13,12 @@ local F_gsmtapv3_version = ProtoField.uint8("gsmtapv3.version", "Version", base.
 local F_gsmtapv3_header_len = ProtoField.uint16("gsmtapv3.hdr_len", "Header length", base.DEC)
 local F_gsmtapv3_type = ProtoField.uint16("gsmtapv3.type", "Type", base.HEX)
 local F_gsmtapv3_subtype = ProtoField.uint16("gsmtapv3.sub_type", "Subtype", base.HEX)
+local F_gsmtapv3_phy_cell = ProtoField.uint32("gsmtapv3.phy_cell", "Phy Cell", base.DEC)
 gsmtap_wrapper_proto.fields.version = F_gsmtapv3_version
 gsmtap_wrapper_proto.fields.hdr_len = F_gsmtapv3_header_len
 gsmtap_wrapper_proto.fields.type = F_gsmtapv3_type
 gsmtap_wrapper_proto.fields.subtype = F_gsmtapv3_subtype
+gsmtap_wrapper_proto.fields.phy_cell = F_gsmtapv3_phy_cell
 
 -- Dissectors
 local ip_dissector = Dissector.get("ip")
@@ -179,6 +181,7 @@ function gsmtap_wrapper_proto.dissector(tvbuffer, pinfo, treeitem)
         local hdr_len = tvbuffer(2, 2):uint()
         local type = tvbuffer(4, 2):uint()
         local subtype = tvbuffer(6, 2):uint()
+        local phy_cell = tvbuffer(8, 4):uint()
 
         local hdr_buffer = tvbuffer:range(0, 4 * hdr_len)
         local gsmtap_data = tvbuffer:range(4 * hdr_len)
@@ -194,6 +197,13 @@ function gsmtap_wrapper_proto.dissector(tvbuffer, pinfo, treeitem)
                                    :set_text(string.format("Header length: %d bytes", hdr_len * 4))
         local child, type_value = t:add(F_gsmtapv3_type, tvbuffer(4, 2))
                                    :set_text(string.format("Type: 0x%04x (%s)", type, itemtext))
+        
+        local phy_cell_text = "Phy Cell: Unknown"
+        if phy_cell > 0 then
+            phy_cell_text = string.format("Phy Cell: %d", phy_cell)
+        end
+        local child, phy_cell_value = t:add(F_gsmtapv3_phy_cell, tvbuffer(8, 4))
+                                    :set_text(phy_cell_text)
 
         pinfo.cols.protocol = "GSMTAPv3"
         if type == 0x0503 then

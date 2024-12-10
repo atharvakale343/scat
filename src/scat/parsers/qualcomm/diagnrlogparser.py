@@ -230,7 +230,9 @@ class DiagNrLogParser:
                 arfcn = 0,
                 sub_type = nr_pdu_id_gsmtap,
                 device_sec = ts_sec,
-                device_usec = ts_usec)
+                device_usec = ts_usec,
+                phy_cell=item.pci
+            )
 
             return {'layer': 'rrc', 'cp': [gsmtap_hdr + msg_content], 'ts': pkt_ts, 'stdout': stdout}
         else:
@@ -347,7 +349,8 @@ class DiagNrLogParser:
                 arfcn = 0,
                 sub_type = 0 if plain else 1,
                 device_sec = ts_sec,
-                device_usec = ts_usec)
+                device_usec = ts_usec,
+                phy_cell=0)  # TODO: Is it possible to get the correct Phy Cell here?
 
             return {'layer': 'nas', 'cp': [gsmtap_hdr + msg_content], 'ts': pkt_ts, 'stdout': stdout}
         else:
